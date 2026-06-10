@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>精神财富 · 新挑战</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&amp;family=Press+Start+2P&amp;display=swap');
+        
+        :root {
+            --gold: #f1c40f;
+            --green: #2ecc71;
+            --dark: #0f0f0f;
+            --panel: #1a1a1a;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body, html {
+            width: 100%; height: 100%;
+            background: #000;
+            font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif;
+            overflow: hidden;
+            color: white;
+        }
+        
+        #menu {
+            position: fixed; inset: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: radial-gradient(circle at center, #1a2533 0%, #000 80%);
+            z-index: 100;
+        }
+        
+        .menu-header {
+            text-align: center; margin-bottom: 40px;
+        }
+        
+        .menu-title {
+            font-size: clamp(32px, 6vw, 56px);
+            font-weight: 700;
+            background: linear-gradient(90deg, #f1c40f, #fff, #f1c40f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(241, 196, 15, 0.5);
+            margin-bottom: 8px;
+        }
+        
+        .menu-subtitle {
+            color: #aaa; font-size: 18px;
+        }
+        
+        .game-cards {
+            display: flex; gap: 30px; flex-wrap: wrap; justify-content: center;
+            max-width: 900px;
+        }
+        
+        .instruction-btn {
+            margin-top: 30px;
+            padding: 10px 24px;
+            background: transparent;
+            color: #888;
+            border: 1px solid #444;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .instruction-btn:hover {
+            color: #f1c40f;
+            border-color: #f1c40f;
+        }
+        
+        .game-card {
+            width: 320px; background: #1f1f1f;
+            border: 3px solid #333;
+            border-radius: 20px;
+            padding: 28px 24px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .game-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            border-color: var(--gold);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6),
+                        0 0 0 1px rgba(241, 196, 15, 0.3);
+        }
+        
+        .game-card::before {
+            content: '';
+            position: absolute; top: -50%; left: -50%;
+            width: 60%; height: 300%;
+            background: linear-gradient(
+                120deg,
+                transparent,
+                rgba(241, 196, 15, 0.15),
+                transparent
+            );
+            transition: all 0.6s;
+        }
+        
+        .game-card:hover::before {
+            left: 150%;
+        }
+        
+        .card-icon {
+            font-size: 64px; margin-bottom: 16px;
+            display: block; text-align: center;
+        }
+        
+        .card-title {
+            font-size: 24px; font-weight: 700;
+            margin-bottom: 10px; color: #fff;
+        }
+        
+        .card-desc {
+            font-size: 14px; color: #aaa; line-height: 1.5;
+        }
+        
+        .back-btn {
+            position: fixed; top: 24px; right: 24px; z-index: 200;
+            padding: 10px 22px;
+            background: rgba(0,0,0,0.7);
+            color: #f1c40f;
+            border: 2px solid #f1c40f;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            display: none;
+            transition: all 0.2s;
+        }
+        
+        .back-btn:hover {
+            background: #f1c40f;
+            color: #000;
+        }
+        
+        .game-view {
+            display: none;
+            width: 100%; height: 100%;
+            position: relative;
+        }
+        
+        /* === SKATE GAME === */
+        #skate-ui {
+            position: absolute; top: 0; left: 0; right: 0;
+            padding: 20px 30px;
+            display: flex; justify-content: space-between;
+            z-index: 10; pointer-events: none;
+        }
+        
+        .stat {
+            background: rgba(0,0,0,0.75);
+            padding: 10px 18px;
+            border-radius: 12px;
+            border: 2px solid #f1c40f;
+            text-align: center;
+            min-width: 110px;
+        }
+        
+        .stat-label { font-size: 12px; color: #aaa; }
+        .stat-value { font-size: 26px; font-weight: 700; color: #f1c40f; }
+        
+        #skate-canvas { display: block; }
+        
+        .overlay {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.92);
+            border: 4px solid #f1c40f;
+            border-radius: 20px;
+            padding: 40px 60px;
+            text-align: center;
+            display: none;
+            z-index: 100;
+            min-width: 320px;
+        }
+        
+        .overlay h1 { font-size: 32px; margin-bottom: 12px; }
+        .overlay p { color: #ccc; margin-bottom: 24px; }
+        
+        .btn {
+            background: #f1c40f;
+            color: #000;
+            border: none;
+            padding: 14px 36px;
+            font-size: 17px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover { background: #fff; transform: scale(1.05); }
+        
+        /* === ORB GAME === */
+        #orb-container {
+            width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #0a1421 0%, #000 70%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #orb-canvas { display: block; }
+        
+        #orb-ui {
+            position: absolute; top: 20px; left: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 14px 22px;
+            border-radius: 14px;
+            border: 2px solid #2ecc71;
+            z-index: 10;
+        }
+        
+        .orb-stat { display: flex; gap: 30px; align-items: center; }
+    </style>
+</head>
+<body>
+
+    <!-- MENU -->
+    <div id="menu">
+        <div class="menu-header">
+            <h1 class="menu-title">精神财富</h1>
+            <p class="menu-subtitle">新挑战 · 2026</p>
+        </div>
+        
+        <div class="game-cards">
+            <!-- Card 1: Skate -->
+            <div class="game-card" onclick="startSkate()">
+                <div class="card-icon">🛹</div>
+                <div class="card-title">词海滑板</div>
+                <div class="card-desc">
+                    极速滑行，收集稀有精神财富。<br>
+                    跳跃时机决定一切！<br>
+                    <span style="color:#f1c40f">文字出现极少，需要极致专注</span>
+                </div>
+            </div>
+            
+            <!-- Card 2: Orb -->
+            <div class="game-card" onclick="startOrb()">
+                <div class="card-icon">✨</div>
+                <div class="card-title">光环守卫</div>
+                <div class="card-desc">
+                    在混沌中寻找四种美德。<br>
+                    避开负面能量，收集光环文字。<br>
+                    <span style="color:#2ecc71">考验反应与决策</span>
+                </div>
+            </div>
+        </div>
+        
+        <p style="margin-top: 50px; color: #555; font-size: 13px;">
+            集齐「勤 · 勇 · 信 · 忠」获得精神财富
+        </p>
+        
+        <button class="instruction-btn" onclick="showGlobalInstructions()">
+            📖 查看游戏说明
+        </button>
+    </div>
+
+    <button class="back-btn" onclick="location.reload()">返回主菜单</button>
+
+    <!-- 全局游戏说明弹窗 -->
+    <div id="global-instructions" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:300; align-items:center; justify-content:center;">
+        <div style="background:#1a1a1a; border:3px solid #f1c40f; border-radius:20px; padding:40px 50px; max-width:620px; width:90%;">
+            <h2 style="color:#f1c40f; text-align:center; margin-bottom:25px; font-size:28px;">游戏说明</h2>
+            
+            <div style="margin-bottom:30px;">
+                <h3 style="color:#f1c40f; margin-bottom:8px;">🎯 共同目标</h3>
+                <p style="color:#ccc; line-height:1.7;">在 <strong style="color:#f1c40f">60秒</strong> 内收集「<strong>勤 · 勇 · 信 · 忠</strong>」四个精神财富文字，即可获得胜利！</p>
+            </div>
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:25px;">
+                <!-- 滑板说明 -->
+                <div>
+                    <h3 style="color:#f1c40f; margin-bottom:8px;">🛹 词海滑板</h3>
+                    <ul style="color:#ccc; padding-left:18px; line-height:1.8; font-size:14.5px;">
+                        <li><strong>空格键</strong>：跳跃</li>
+                        <li><strong>左右键 / A D</strong>：控制身体倾斜</li>
+                        <li>文字出现极少，位置较高</li>
+                        <li>需要精准的跳跃时机</li>
+                    </ul>
+                </div>
+                
+                <!-- 光环说明 -->
+                <div>
+                    <h3 style="color:#2ecc71; margin-bottom:8px;">✨ 光环守卫</h3>
+                    <ul style="color:#ccc; padding-left:18px; line-height:1.8; font-size:14.5px;">
+                        <li><strong>WASD / 方向键</strong>：移动光球</li>
+                        <li>光球带有惯性，需提前预判</li>
+                        <li>避开红色负面能量球</li>
+                        <li>靠近金色文字即可自动收集</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div style="text-align:center; margin-top:30px;">
+                <button onclick="hideGlobalInstructions()" 
+                        style="background:#f1c40f; color:#000; border:none; padding:12px 40px; font-size:16px; font-weight:700; border-radius:8px; cursor:pointer;">
+                    我知道了，开始挑战
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SKATE GAME -->
+    <div id="skate-view" class="game-view">
+        <div id="skate-ui">
+            <div class="stat">
+                <div class="stat-label">剩余时间</div>
+                <div id="skate-timer" class="stat-value">60</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">已收集</div>
+                <div id="skate-collected" class="stat-value" style="color:#2ecc71">0/4</div>
+            </div>
+        </div>
+        
+        <canvas id="skate-canvas"></canvas>
+        
+        <div id="skate-win" class="overlay">
+            <h1 style="color:#f1c40f">完美滑行！</h1>
+            <p>你集齐了全部精神财富</p>
+            <button class="btn" onclick="initSkate()">再来一局</button>
+        </div>
+        
+        <div id="skate-lose" class="overlay">
+            <h1 style="color:#e74c3c">挑战结束</h1>
+            <p id="skate-reason"></p>
+            <button class="btn" onclick="initSkate()">重新挑战</button>
+        </div>
+        
+        <!-- 滑板游戏说明 -->
+        <div id="skate-instructions" class="overlay" style="display:block; border-color:#f1c40f; max-width:420px;">
+            <h1 style="color:#f1c40f; font-size:26px;">词海滑板</h1>
+            <div style="text-align:left; color:#ddd; margin:20px 0; line-height:1.75; font-size:15px;">
+                <p><strong>目标：</strong>60秒内收集「勤 · 勇 · 信 · 忠」</p>
+                <p style="margin-top:12px;"><strong>操作：</strong></p>
+                <ul style="padding-left:20px; margin-top:6px;">
+                    <li><strong>空格键</strong> — 跳跃</li>
+                    <li><strong>← → / A D</strong> — 左右倾斜</li>
+                </ul>
+                <p style="margin-top:14px; color:#f1c40f;"><strong>提示：</strong>文字出现很少且位置较高，提前预判跳跃时机！</p>
+            </div>
+            <button class="btn" onclick="startSkateGame()" style="margin-top:10px;">开始滑行</button>
+        </div>
+    </div>
+
+    <!-- ORB GAME -->
+    <div id="orb-view" class="game-view">
+        <div id="orb-container">
+            <canvas id="orb-canvas"></canvas>
+            
+            <div id="orb-ui">
+                <div class="orb-stat">
+                    <div>
+                        <div style="font-size:12px;color:#aaa">时间</div>
+                        <div id="orb-timer" style="font-size:28px;font-weight:700;color:#f1c40f">60</div>
+                    </div>
+                    <div>
+                        <div style="font-size:12px;color:#aaa">精神财富</div>
+                        <div id="orb-collected" style="font-size:22px;font-weight:700;color:#2ecc71">0 / 4</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="orb-win" class="overlay" style="border-color:#2ecc71">
+                <h1 style="color:#2ecc71">光环共鸣！</h1>
+                <p>四种美德已全部觉醒</p>
+                <button class="btn" onclick="initOrb()">再次守护</button>
+            </div>
+            
+            <div id="orb-lose" class="overlay" style="border-color:#e74c3c">
+                <h1 style="color:#e74c3c">光环破碎</h1>
+                <p id="orb-reason"></p>
+                <button class="btn" onclick="initOrb()">重新守护</button>
+            </div>
+            
+            <!-- 光环游戏说明 -->
+            <div id="orb-instructions" class="overlay" style="display:block; border-color:#2ecc71; max-width:420px;">
+                <h1 style="color:#2ecc71; font-size:26px;">光环守卫</h1>
+                <div style="text-align:left; color:#ddd; margin:20px 0; line-height:1.75; font-size:15px;">
+                    <p><strong>目标：</strong>60秒内收集「勤 · 勇 · 信 · 忠」四个光环</p>
+                    <p style="margin-top:12px;"><strong>操作：</strong></p>
+                    <ul style="padding-left:20px; margin-top:6px;">
+                        <li><strong>WASD / 方向键</strong> — 移动光球</li>
+                    </ul>
+                    <p style="margin-top:14px; color:#2ecc71;"><strong>提示：</strong>光球有惯性，需提前预判。避开红色负面能量，靠近金色文字即可收集。</p>
+                </div>
+                <button class="btn" onclick="startOrbGame()" style="margin-top:10px; background:#2ecc71;">开始守护</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const keys = {};
+        window.addEventListener('keydown', e => keys[e.code] = true);
+        window.addEventListener('keyup', e => keys[e.code] = false);
+        
+        let currentGame = null;
+
+        // ==================== 简单音效系统 (Web Audio API) ====================
+        let audioCtx;
+        
+        function initAudio() {
+            if (!audioCtx) {
+                try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+            }
+        }
+        
+        function playSound(type) {
+            if (!audioCtx) initAudio();
+            if (!audioCtx) return;
+            
+            try {
+                const now = audioCtx.currentTime;
+                
+                if (type === 'win') {
+                    [880, 1100, 1320, 1760].forEach((freq, i) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.type = 'sine';
+                        o.frequency.value = freq;
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        g.gain.value = 0.13;
+                        o.start(now + i * 0.07);
+                        g.gain.linearRampToValueAtTime(0.0001, now + 1.1 + i * 0.07);
+                        o.stop(now + 1.5);
+                    });
+                    return;
+                }
+                
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                const filter = audioCtx.createBiquadFilter();
+                
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                if (type === 'jump') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(380, now);
+                    osc.frequency.linearRampToValueAtTime(160, now + 0.32);
+                    gain.gain.value = 0.16;
+                    gain.gain.linearRampToValueAtTime(0.0001, now + 0.38);
+                    filter.type = 'lowpass';
+                    filter.frequency.value = 1100;
+                } 
+                else if (type === 'collect') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(920, now);
+                    osc.frequency.setValueAtTime(1380, now + 0.06);
+                    osc.frequency.setValueAtTime(1840, now + 0.15);
+                    gain.gain.value = 0.22;
+                    gain.gain.linearRampToValueAtTime(0.0001, now + 0.5);
+                    filter.type = 'lowpass';
+                    filter.frequency.value = 2400;
+                } 
+                else if (type === 'hit') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(160, now);
+                    osc.frequency.linearRampToValueAtTime(55, now + 0.55);
+                    gain.gain.value = 0.32;
+                    gain.gain.linearRampToValueAtTime(0.0001, now + 0.65);
+                    filter.type = 'lowpass';
+                    filter.frequency.value = 700;
+                } 
+                else if (type === 'lose') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(200, now);
+                    osc.frequency.linearRampToValueAtTime(70, now + 0.75);
+                    gain.gain.value = 0.28;
+                    gain.gain.linearRampToValueAtTime(0.0001, now + 0.9);
+                    filter.type = 'lowpass';
+                    filter.frequency.value = 550;
+                }
+                
+                osc.start(now);
+                osc.stop(now + 1.2);
+            } catch(e) {}
+        }
+
+        function showGame(viewId) {
+            document.getElementById('menu').style.display = 'none';
+            document.querySelector('.back-btn').style.display = 'block';
+            document.getElementById(viewId).style.display = 'block';
+        }
+
+        // ==================== GAME 1: 词海滑板 ====================
+        let skateRAF = null;
+        
+        function startSkate() {
+            showGame('skate-view');
+            // 先显示说明
+            document.getElementById('skate-instructions').style.display = 'block';
+            document.getElementById('skate-win').style.display = 'none';
+            document.getElementById('skate-lose').style.display = 'none';
+        }
+        
+        function startSkateGame() {
+            document.getElementById('skate-instructions').style.display = 'none';
+            initSkate();
+        }
+        
+        function initSkate() {
+            if (skateRAF) cancelAnimationFrame(skateRAF);
+            
+            // 确保说明界面隐藏
+            document.getElementById('skate-instructions').style.display = 'none';
+            document.getElementById('skate-win').style.display = 'none';
+            document.getElementById('skate-lose').style.display = 'none';
+            
+            const canvas = document.getElementById('skate-canvas');
+            const ctx = canvas.getContext('2d', { alpha: true });
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Game state
+            let player = { x: 280, y: 520, vy: 0, angle: 0 };
+            let speed = 6.5;
+            let distance = 0;
+            let timeLeft = 60;
+            let lastTime = performance.now();
+            let active = true;
+            let collected = new Set();
+            let obstacles = [];
+            let words = [];
+            let particles = [];
+            let groundY = canvas.height - 180;
+            
+            const TARGETS = ['勤', '勇', '信', '忠'];
+            const timerEl = document.getElementById('skate-timer');
+            const collectedEl = document.getElementById('skate-collected');
+            
+            document.getElementById('skate-win').style.display = 'none';
+            document.getElementById('skate-lose').style.display = 'none';
+            
+            function reset() {
+                player = { x: 280, y: groundY - 30, vy: 0, angle: 0 };
+                speed = 6.5;
+                distance = 0;
+                timeLeft = 60;
+                active = true;
+                collected.clear();
+                obstacles = [];
+                words = [];
+                particles = [];
+                lastTime = performance.now();
+            }
+            reset();
+            
+            function spawnObstacle() {
+                const type = Math.random() < 0.6 ? 'cone' : (Math.random() < 0.5 ? 'low' : 'gap');
+                obstacles.push({
+                    x: canvas.width + 100,
+                    y: groundY,
+                    w: type === 'gap' ? 90 : 38,
+                    h: type === 'low' ? 28 : 50,
+                    type: type
+                });
+            }
+            
+            function spawnWord() {
+                const avail = TARGETS.filter(t => !collected.has(t));
+                if (avail.length === 0) return;
+                
+                words.push({
+                    x: canvas.width + 120,
+                    y: groundY - 70 - Math.random() * 110,
+                    char: avail[Math.floor(Math.random() * avail.length)],
+                    vy: 0,
+                    life: 420
+                });
+            }
+            
+            function update(dt) {
+                if (!active) return;
+                
+                timeLeft -= dt / 1000;
+                if (timeLeft <= 0) {
+                    endGame(false, "时间耗尽！");
+                    return;
+                }
+                timerEl.textContent = Math.ceil(Math.max(0, timeLeft));
+                collectedEl.textContent = `${collected.size}/4`;
+                
+                // Speed increases
+                speed = Math.min(11.8, speed + 0.0012);
+                
+                // Player physics
+                const onGround = player.y >= groundY - 28;
+                
+                if (keys['Space'] && onGround) {
+                    player.vy = -14.5;
+                    playSound('jump');
+                }
+                
+                player.vy += 0.68;
+                player.y += player.vy;
+                
+                if (player.y > groundY - 28) {
+                    player.y = groundY - 28;
+                    player.vy = 0;
+                }
+                
+                // Lean control
+                if (keys['ArrowLeft'] || keys['KeyA']) player.angle -= 0.08;
+                if (keys['ArrowRight'] || keys['KeyD']) player.angle += 0.08;
+                player.angle *= 0.88;
+                
+                // Spawn
+                distance += speed;
+                if (Math.random() < 0.022) spawnObstacle();
+                if (Math.random() < 0.028 && words.length < 2) spawnWord();
+                
+                // Move obstacles
+                for (let i = obstacles.length - 1; i >= 0; i--) {
+                    const o = obstacles[i];
+                    o.x -= speed;
+                    
+                    // Collision
+                    const px = player.x;
+                    const py = player.y;
+                    
+                    if (o.type === 'gap') {
+                        if (px > o.x - 20 && px < o.x + o.w + 20 && py > groundY - 10) {
+                            playSound('hit');
+                            endGame(false, "掉进裂缝了！");
+                            return;
+                        }
+                    } else {
+                        const hitX = px > o.x - 18 && px < o.x + o.w + 18;
+                        const hitY = py > o.y - o.h - 10 && py < o.y + 10;
+                        
+                        if (hitX && hitY) {
+                            playSound('hit');
+                            endGame(false, o.type === 'low' ? "撞到障碍物！" : "撞车了！");
+                            return;
+                        }
+                    }
+                    
+                    if (o.x < -100) obstacles.splice(i, 1);
+                }
+                
+                // Move & collect words
+                for (let i = words.length - 1; i >= 0; i--) {
+                    const w = words[i];
+                    w.x -= speed * 0.92;
+                    w.life--;
+                    
+                    const dx = player.x - w.x;
+                    const dy = player.y - w.y;
+                    
+                    if (Math.hypot(dx, dy) < 48 && !collected.has(w.char)) {
+                        collected.add(w.char);
+                        playSound('collect');
+                        createParticles(w.x, w.y, '#f1c40f', 18);
+                        
+                        if (collected.size === 4) {
+                            endGame(true);
+                            return;
+                        }
+                        words.splice(i, 1);
+                        continue;
+                    }
+                    
+                    if (w.x < -80 || w.life <= 0) words.splice(i, 1);
+                }
+                
+                // Particles
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    const p = particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.1;
+                    p.life--;
+                    if (p.life <= 0) particles.splice(i, 1);
+                }
+            }
+            
+            function createParticles(x, y, color, count) {
+                for (let i = 0; i < count; i++) {
+                    particles.push({
+                        x, y,
+                        vx: (Math.random() - 0.5) * 6,
+                        vy: (Math.random() - 0.5) * 5 - 1,
+                        life: 35 + Math.random() * 20,
+                        color
+                    });
+                }
+            }
+            
+            function draw() {
+                ctx.fillStyle = '#0a0f14';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Background buildings (parallax)
+                ctx.fillStyle = '#1a2533';
+                for (let i = -1; i < 6; i++) {
+                    const bx = ((distance * 0.3) % 380) + i * 380 - 100;
+                    ctx.fillRect(bx, 80, 120, 280);
+                    ctx.fillRect(bx + 140, 140, 80, 220);
+                }
+                
+                // Ground
+                ctx.fillStyle = '#222';
+                ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+                
+                // Road lines
+                ctx.strokeStyle = '#444';
+                ctx.lineWidth = 3;
+                for (let i = 0; i < 12; i++) {
+                    const lx = ((distance * 1.8) % 180) + i * 180 - 200;
+                    ctx.beginPath();
+                    ctx.moveTo(lx, groundY + 35);
+                    ctx.lineTo(lx + 70, groundY + 35);
+                    ctx.stroke();
+                }
+                
+                // Obstacles
+                obstacles.forEach(o => {
+                    if (o.type === 'cone') {
+                        ctx.fillStyle = '#e67e22';
+                        ctx.beginPath();
+                        ctx.moveTo(o.x + 19, o.y - o.h);
+                        ctx.lineTo(o.x, o.y);
+                        ctx.lineTo(o.x + 38, o.y);
+                        ctx.fill();
+                        ctx.fillStyle = '#fff';
+                        ctx.fillRect(o.x + 12, o.y - 32, 14, 8);
+                    } else if (o.type === 'low') {
+                        ctx.fillStyle = '#7f8c8d';
+                        ctx.fillRect(o.x, o.y - o.h, o.w, o.h);
+                        ctx.fillStyle = '#fff';
+                        ctx.fillRect(o.x + 8, o.y - o.h + 6, o.w - 16, 6);
+                    } else if (o.type === 'gap') {
+                        ctx.fillStyle = '#111';
+                        ctx.fillRect(o.x, groundY - 10, o.w, 120);
+                    }
+                });
+                
+                // Words
+                ctx.font = 'bold 42px "Noto Sans SC", sans-serif';
+                ctx.textAlign = 'center';
+                words.forEach(w => {
+                    const alpha = Math.min(1, w.life / 80);
+                    ctx.fillStyle = `rgba(241, 196, 15, ${alpha})`;
+                    ctx.fillText(w.char, w.x, w.y);
+                    ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.6})`;
+                    ctx.lineWidth = 3;
+                    ctx.strokeText(w.char, w.x, w.y);
+                });
+                
+                // Player (skateboarder)
+                ctx.save();
+                ctx.translate(player.x, player.y);
+                ctx.rotate(player.angle * 0.6);
+                
+                // Board
+                ctx.fillStyle = '#e74c3c';
+                ctx.fillRect(-32, 18, 64, 14);
+                ctx.fillStyle = '#c0392b';
+                ctx.fillRect(-28, 22, 56, 6);
+                
+                // Body
+                ctx.fillStyle = '#3498db';
+                ctx.fillRect(-14, -8, 28, 26);
+                
+                // Head
+                ctx.fillStyle = '#f5d0a9';
+                ctx.beginPath();
+                ctx.arc(0, -18, 11, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Helmet
+                ctx.fillStyle = '#9b59b6';
+                ctx.beginPath();
+                ctx.arc(0, -20, 12, Math.PI, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+                
+                // Particles
+                particles.forEach(p => {
+                    ctx.globalAlpha = p.life / 50;
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(p.x - 2, p.y - 2, 5, 5);
+                });
+                ctx.globalAlpha = 1;
+                
+                // Speed lines
+                if (speed > 9) {
+                    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+                    ctx.lineWidth = 1;
+                    for (let i = 0; i < 5; i++) {
+                        const lx = 120 + Math.random() * 180;
+                        ctx.beginPath();
+                        ctx.moveTo(lx, player.y - 40 + Math.random() * 60);
+                        ctx.lineTo(lx - speed * 3, player.y - 40 + Math.random() * 60);
+                        ctx.stroke();
+                    }
+                }
+            }
+            
+            function endGame(win, reason = '') {
+                active = false;
+                const winEl = document.getElementById('skate-win');
+                const loseEl = document.getElementById('skate-lose');
+                
+                if (win) {
+                    playSound('win');
+                    winEl.style.display = 'block';
+                } else {
+                    playSound('lose');
+                    document.getElementById('skate-reason').textContent = reason;
+                    loseEl.style.display = 'block';
+                }
+            }
+            
+            function loop(now) {
+                if (!active && !document.getElementById('skate-win').style.display && !document.getElementById('skate-lose').style.display) {
+                    return;
+                }
+                
+                const dt = now - lastTime;
+                lastTime = now;
+                
+                update(dt);
+                draw();
+                
+                if (active) {
+                    skateRAF = requestAnimationFrame(loop);
+                }
+            }
+            
+            skateRAF = requestAnimationFrame(loop);
+        }
+
+        // ==================== GAME 2: 光环守卫 ====================
+        let orbRAF = null;
+        
+        function startOrb() {
+            showGame('orb-view');
+            // 先显示说明
+            document.getElementById('orb-instructions').style.display = 'block';
+            document.getElementById('orb-win').style.display = 'none';
+            document.getElementById('orb-lose').style.display = 'none';
+        }
+        
+        function startOrbGame() {
+            document.getElementById('orb-instructions').style.display = 'none';
+            initOrb();
+        }
+        
+        function initOrb() {
+            if (orbRAF) cancelAnimationFrame(orbRAF);
+            
+            // 确保说明界面隐藏
+            document.getElementById('orb-instructions').style.display = 'none';
+            document.getElementById('orb-win').style.display = 'none';
+            document.getElementById('orb-lose').style.display = 'none';
+            
+            const canvas = document.getElementById('orb-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            let player = { x: canvas.width / 2, y: canvas.height / 2, vx: 0, vy: 0 };
+            let timeLeft = 60;
+            let lastTime = performance.now();
+            let active = true;
+            let collected = new Set();
+            let virtues = [];
+            let enemies = [];
+            let particles = [];
+            
+            const TARGETS = ['勤', '勇', '信', '忠'];
+            const timerEl = document.getElementById('orb-timer');
+            const collectedEl = document.getElementById('orb-collected');
+            
+            document.getElementById('orb-win').style.display = 'none';
+            document.getElementById('orb-lose').style.display = 'none';
+            
+            function reset() {
+                player = { x: canvas.width / 2, y: canvas.height / 2, vx: 0, vy: 0 };
+                timeLeft = 60;
+                active = true;
+                collected.clear();
+                virtues = [];
+                enemies = [];
+                particles = [];
+                lastTime = performance.now();
+                
+                // Initial virtues - one close to player for better start
+                spawnVirtueClose();
+                spawnVirtue();
+            }
+            
+            function spawnVirtueClose() {
+                const avail = TARGETS.filter(t => !collected.has(t));
+                if (avail.length === 0) return;
+                
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 180 + Math.random() * 80;
+                
+                virtues.push({
+                    x: player.x + Math.cos(angle) * dist,
+                    y: player.y + Math.sin(angle) * dist,
+                    char: avail[Math.floor(Math.random() * avail.length)],
+                    pulse: Math.random() * Math.PI * 2,
+                    life: 9999
+                });
+            }
+            reset();
+            
+            function spawnVirtue() {
+                const avail = TARGETS.filter(t => !collected.has(t));
+                if (avail.length === 0) return;
+                
+                let x, y, tries = 0;
+                do {
+                    x = 120 + Math.random() * (canvas.width - 240);
+                    y = 120 + Math.random() * (canvas.height - 240);
+                    tries++;
+                } while (tries < 20 && Math.hypot(x - player.x, y - player.y) < 220);
+                
+                virtues.push({
+                    x, y,
+                    char: avail[Math.floor(Math.random() * avail.length)],
+                    pulse: Math.random() * Math.PI * 2,
+                    life: 9999
+                });
+            }
+            
+            function spawnEnemy() {
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 380 + Math.random() * 220;
+                
+                enemies.push({
+                    x: player.x + Math.cos(angle) * dist,
+                    y: player.y + Math.sin(angle) * dist,
+                    vx: (Math.random() - 0.5) * 1.8,
+                    vy: (Math.random() - 0.5) * 1.8,
+                    size: 18 + Math.random() * 8,
+                    type: Math.random() < 0.65 ? 'chaser' : 'wander'
+                });
+            }
+            
+            function update(dt) {
+                if (!active) return;
+                
+                timeLeft -= dt / 1000;
+                if (timeLeft <= 0) {
+                    endGame(false, "光环能量耗尽！");
+                    return;
+                }
+                timerEl.textContent = Math.ceil(Math.max(0, timeLeft));
+                collectedEl.textContent = `${collected.size} / 4`;
+                
+                // Player movement (momentum)
+                let ax = 0, ay = 0;
+                const accel = 1.05;
+                
+                if (keys['ArrowLeft'] || keys['KeyA']) ax -= accel;
+                if (keys['ArrowRight'] || keys['KeyD']) ax += accel;
+                if (keys['ArrowUp'] || keys['KeyW']) ay -= accel;
+                if (keys['ArrowDown'] || keys['KeyS']) ay += accel;
+                
+                player.vx = player.vx * 0.82 + ax;
+                player.vy = player.vy * 0.82 + ay;
+                
+                player.x += player.vx;
+                player.y += player.vy;
+                
+                // Boundaries
+                player.x = Math.max(50, Math.min(canvas.width - 50, player.x));
+                player.y = Math.max(50, Math.min(canvas.height - 50, player.y));
+                
+                // Spawn logic
+                if (Math.random() < 0.009 && enemies.length < 4) spawnEnemy();
+                if (Math.random() < 0.016 && virtues.length < 3) spawnVirtue();
+                
+                // Update virtues
+                for (let i = virtues.length - 1; i >= 0; i--) {
+                    const v = virtues[i];
+                    v.pulse += 0.06;
+                    
+                    const dx = player.x - v.x;
+                    const dy = player.y - v.y;
+                    const dist = Math.hypot(dx, dy);
+                    
+                    if (dist < 48) {
+                        collected.add(v.char);
+                        playSound('collect');
+                        createOrbParticles(v.x, v.y, '#f1c40f', 22);
+                        
+                        if (collected.size === 4) {
+                            endGame(true);
+                            return;
+                        }
+                        virtues.splice(i, 1);
+                        // Spawn new one
+                        setTimeout(() => { if (active) spawnVirtue(); }, 420);
+                        continue;
+                    }
+                }
+                
+                // Update enemies
+                for (let i = enemies.length - 1; i >= 0; i--) {
+                    const e = enemies[i];
+                    
+                    if (e.type === 'chaser') {
+                        const dx = player.x - e.x;
+                        const dy = player.y - e.y;
+                        const d = Math.hypot(dx, dy) || 1;
+                        e.vx = e.vx * 0.94 + (dx / d) * 0.42;
+                        e.vy = e.vy * 0.94 + (dy / d) * 0.42;
+                    } else {
+                        e.vx *= 0.985;
+                        e.vy *= 0.985;
+                        if (Math.random() < 0.03) {
+                            e.vx += (Math.random() - 0.5) * 1.2;
+                            e.vy += (Math.random() - 0.5) * 1.2;
+                        }
+                    }
+                    
+                    e.x += e.vx;
+                    e.y += e.vy;
+                    
+                    // Bounce on edges
+                    if (e.x < 40 || e.x > canvas.width - 40) e.vx *= -1;
+                    if (e.y < 40 || e.y > canvas.height - 40) e.vy *= -1;
+                    
+                    // Collision with player
+                    const dx = player.x - e.x;
+                    const dy = player.y - e.y;
+                    if (Math.hypot(dx, dy) < e.size + 18) {
+                        playSound('hit');
+                        endGame(false, "被负面能量击中！");
+                        return;
+                    }
+                }
+                
+                // Particles
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    const p = particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vx *= 0.96;
+                    p.vy *= 0.96;
+                    p.life--;
+                    if (p.life <= 0) particles.splice(i, 1);
+                }
+            }
+            
+            function createOrbParticles(x, y, color, count) {
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const spd = 1.5 + Math.random() * 3.5;
+                    particles.push({
+                        x, y,
+                        vx: Math.cos(angle) * spd,
+                        vy: Math.sin(angle) * spd,
+                        life: 28 + Math.random() * 25,
+                        color,
+                        size: 3 + Math.random() * 3
+                    });
+                }
+            }
+            
+            function draw() {
+                // Background
+                ctx.fillStyle = '#05080f';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Subtle grid
+                ctx.strokeStyle = 'rgba(255,255,255,0.035)';
+                ctx.lineWidth = 1;
+                for (let x = 0; x < canvas.width; x += 48) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, canvas.height);
+                    ctx.stroke();
+                }
+                for (let y = 0; y < canvas.height; y += 48) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(canvas.width, y);
+                    ctx.stroke();
+                }
+                
+                // Enemies (negative energy)
+                enemies.forEach(e => {
+                    const pulse = Math.sin(Date.now() / 180 + e.x) * 0.3 + 0.7;
+                    
+                    ctx.fillStyle = `rgba(231, 76, 60, ${pulse})`;
+                    ctx.beginPath();
+                    ctx.arc(e.x, e.y, e.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = 'rgba(192, 57, 43, 0.6)';
+                    ctx.beginPath();
+                    ctx.arc(e.x - 4, e.y - 4, e.size * 0.45, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Evil core
+                    ctx.fillStyle = '#c0392b';
+                    ctx.beginPath();
+                    ctx.arc(e.x, e.y, e.size * 0.35, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                
+                // Virtues (glowing collectibles)
+                virtues.forEach(v => {
+                    const glow = Math.sin(v.pulse) * 0.35 + 0.85;
+                    
+                    // Outer glow
+                    const grad = ctx.createRadialGradient(v.x, v.y, 12, v.x, v.y, 52);
+                    grad.addColorStop(0, `rgba(241, 196, 15, ${glow * 0.9})`);
+                    grad.addColorStop(1, 'rgba(241, 196, 15, 0)');
+                    
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(v.x, v.y, 52, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Core
+                    ctx.fillStyle = '#f1c40f';
+                    ctx.beginPath();
+                    ctx.arc(v.x, v.y, 13, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Character
+                    ctx.fillStyle = '#000';
+                    ctx.font = 'bold 22px "Noto Sans SC", sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(v.char, v.x, v.y + 1);
+                });
+                
+                // Player orb
+                const playerGlow = ctx.createRadialGradient(
+                    player.x - 6, player.y - 6, 8,
+                    player.x, player.y, 38
+                );
+                playerGlow.addColorStop(0, '#5dade2');
+                playerGlow.addColorStop(0.4, '#3498db');
+                playerGlow.addColorStop(1, 'rgba(52, 152, 219, 0.1)');
+                
+                ctx.fillStyle = playerGlow;
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, 32, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#5dade2';
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, 14, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(player.x - 5, player.y - 5, 5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Particles
+                particles.forEach(p => {
+                    ctx.globalAlpha = p.life / 45;
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(p.x - p.size/2, p.y - p.size/2, p.size, p.size);
+                });
+                ctx.globalAlpha = 1;
+            }
+            
+            function endGame(win, reason = '') {
+                active = false;
+                const winEl = document.getElementById('orb-win');
+                const loseEl = document.getElementById('orb-lose');
+                
+                if (win) {
+                    playSound('win');
+                    winEl.style.display = 'block';
+                } else {
+                    playSound('lose');
+                    document.getElementById('orb-reason').textContent = reason;
+                    loseEl.style.display = 'block';
+                }
+            }
+            
+            function loop(now) {
+                const dt = now - lastTime;
+                lastTime = now;
+                
+                update(dt);
+                draw();
+                
+                if (active) {
+                    orbRAF = requestAnimationFrame(loop);
+                }
+            }
+            
+            orbRAF = requestAnimationFrame(loop);
+        }
+        
+        // Easter egg: press "?" to show hint
+        window.addEventListener('keypress', function(e) {
+            if (e.key === '?') {
+                const menu = document.getElementById('menu');
+                if (menu.style.display !== 'none') {
+                    alert('提示：两个游戏都强调「专注」与「时机」。文字出现很少，但收集后成就感极强！');
+                }
+            }
+        });
+        
+        // 全局说明弹窗控制
+        function showGlobalInstructions() {
+            document.getElementById('global-instructions').style.display = 'flex';
+        }
+        
+        function hideGlobalInstructions() {
+            document.getElementById('global-instructions').style.display = 'none';
+        }
+        
+        // Make sure back button works properly
+        console.log('%c[精神财富] 新挑战版本已加载 - 完全原创设计', 'color:#555');
+    </script>
+</body>
+</html>
